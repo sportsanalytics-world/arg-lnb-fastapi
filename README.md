@@ -9,13 +9,22 @@ Esta es una API REST construida con FastAPI que lee automáticamente un archivo 
 - **CORS habilitado**: Permite acceso desde cualquier dominio
 - **Tipado completo**: Usa type hints de Python
 - **Documentación automática**: Swagger UI en `/docs`
-- **Especificación OpenAPI**: Archivo `openapi.yaml` incluido
+- **Especificación OpenAPI 3.1.0**: Archivo `openapi.yaml` incluido
 - **Logging**: Registro de operaciones para debugging
+- **Paginación**: Soporte para paginación de resultados (máximo 100 registros por página)
+- **Filtros avanzados**: Múltiples opciones de filtrado por equipo, temporada, posición, nacionalidad, nombre, apellido, fecha de nacimiento, altura y peso
+- **Compatibilidad ChatGPT**: Especificación OpenAPI compatible con ChatGPT Customizado
 
 ## 📋 Requisitos
 
-- Python 3.8 o superior
+- Python 3.8 o superior (recomendado 3.11+)
 - pip (gestor de paquetes de Python)
+- Dependencias (instaladas automáticamente):
+  - FastAPI >= 0.115.13
+  - Uvicorn >= 0.32.1
+  - Pandas >= 2.2.3
+  - Requests >= 2.32.3
+  - Gunicorn >= 23.0.0
 
 ## 🛠️ Instalación
 

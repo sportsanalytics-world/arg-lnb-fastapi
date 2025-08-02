@@ -28,8 +28,6 @@ info:
 servers:
   - url: https://arg-lnb-fastapi.onrender.com
     description: Production server
-  - url: http://localhost:8000
-    description: Development server
 
 paths:
   /:
@@ -64,13 +62,7 @@ paths:
   /datos:
     get:
       summary: Obtener datos del CSV
-      description: |
-        Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación y filtros.
-        
-        **Paginación:** `page` (número de página), `limit` (registros por página, máximo 100)
-        **Filtros:** `team`, `season`, `position`, `nationality`, `first_name`, `last_name`, `birthdate`, `height`, `weight`
-        
-        **Ejemplos:** `/datos?limit=5`, `/datos?team=Boca%20Juniors`, `/datos?first_name=Pablo`
+      description: Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación y filtros. Parámetros: page, limit, team, season, position, nationality, first_name, last_name, birthdate, height, weight.
       operationId: getDatos
       parameters:
         - name: page
@@ -202,8 +194,7 @@ paths:
   /info:
     get:
       summary: Información sobre los datos
-      description: |
-        Devuelve información sobre los datos disponibles: total de registros, columnas, filtros disponibles y configuración de paginación.
+      description: Devuelve información sobre los datos disponibles: total de registros, columnas, filtros disponibles y configuración de paginación.
       operationId: getInfo
       responses:
         '200':
