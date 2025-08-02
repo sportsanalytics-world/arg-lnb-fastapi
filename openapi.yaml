@@ -67,21 +67,10 @@ paths:
       description: |
         Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación y filtros.
         
-        **Parámetros de paginación:**
-        - `page`: Número de página (empezando en 1)
-        - `limit`: Número de registros por página (máximo 100)
+        **Paginación:** `page` (número de página), `limit` (registros por página, máximo 100)
+        **Filtros:** `team` (equipo), `season` (temporada), `position` (posición), `nationality` (nacionalidad)
         
-        **Filtros disponibles:**
-        - `team`: Filtrar por equipo (búsqueda parcial, case-insensitive)
-        - `season`: Filtrar por temporada (2020, 2021, 2022, 2023, 2024)
-        - `position`: Filtrar por posición (G, F, C, PG, SG, SF, PF)
-        - `nationality`: Filtrar por nacionalidad (búsqueda parcial, case-insensitive)
-        
-        **Ejemplos de uso:**
-        - `/datos?page=1&limit=10` - Primera página con 10 registros
-        - `/datos?team=Boca%20Juniors` - Jugadores de Boca Juniors
-        - `/datos?season=2023&position=F` - Forwards de 2023
-        - `/datos?nationality=Argentina&limit=5` - 5 jugadores argentinos
+        **Ejemplos:** `/datos?limit=5`, `/datos?team=Boca%20Juniors`, `/datos?season=2023&position=F`
       operationId: getDatos
       parameters:
         - name: page
@@ -169,11 +158,7 @@ paths:
     get:
       summary: Información sobre los datos
       description: |
-        Devuelve información sobre los datos disponibles, incluyendo:
-        - Número total de registros
-        - Columnas disponibles
-        - Filtros disponibles (equipos, temporadas, posiciones, nacionalidades)
-        - Configuración de paginación
+        Devuelve información sobre los datos disponibles: total de registros, columnas, filtros disponibles y configuración de paginación.
       operationId: getInfo
       responses:
         '200':
