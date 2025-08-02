@@ -48,26 +48,106 @@ def test_api_endpoints(base_url: str = "http://localhost:8000") -> Dict[str, Any
         results["health"] = {"status": "❌ ERROR", "error": str(e)}
         print(f"❌ Health check: ERROR - {str(e)}")
     
-    # Test 3: Endpoint de datos
-    print("🔍 Probando endpoint de datos...")
+    # Test 3: Endpoint de información
+    print("🔍 Probando endpoint de información...")
+    try:
+        response = requests.get(f"{base_url}/info")
+        if response.status_code == 200:
+            data = response.json()
+            results["info"] = {
+                "status": "✅ OK", 
+                "total_records": data.get("total_records", 0),
+                "columns": len(data.get("columns", [])),
+                "filters": len(data.get("filters_available", {}))
+            }
+            print(f"✅ Endpoint info: OK - {data.get('total_records', 0)} registros totales")
+            print(f"   Columnas: {len(data.get('columns', []))}, Filtros: {len(data.get('filters_available', {}))}")
+        else:
+            results["info"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint info: ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["info"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint info: ERROR - {str(e)}")
+    
+    # Test 4: Endpoint de datos (paginación por defecto)
+    print("🔍 Probando endpoint de datos (paginación por defecto)...")
     try:
         response = requests.get(f"{base_url}/datos")
         if response.status_code == 200:
             data = response.json()
-            results["datos"] = {
+            results["datos_default"] = {
                 "status": "✅ OK", 
                 "registros": len(data),
                 "muestra": data[:2] if data else []
             }
-            print(f"✅ Endpoint datos: OK - {len(data)} registros obtenidos")
+            print(f"✅ Endpoint datos (default): OK - {len(data)} registros obtenidos")
             if data:
-                print(f"   Muestra del primer registro: {data[0]}")
+                print(f"   Muestra del primer registro: {list(data[0].keys())[:3]}...")
         else:
-            results["datos"] = {"status": "❌ ERROR", "status_code": response.status_code}
-            print(f"❌ Endpoint datos: ERROR - Status {response.status_code}")
+            results["datos_default"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (default): ERROR - Status {response.status_code}")
     except Exception as e:
-        results["datos"] = {"status": "❌ ERROR", "error": str(e)}
-        print(f"❌ Endpoint datos: ERROR - {str(e)}")
+        results["datos_default"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (default): ERROR - {str(e)}")
+    
+    # Test 5: Endpoint de datos con límite pequeño
+    print("🔍 Probando endpoint de datos con límite pequeño...")
+    try:
+        response = requests.get(f"{base_url}/datos?limit=5")
+        if response.status_code == 200:
+            data = response.json()
+            results["datos_limit"] = {
+                "status": "✅ OK", 
+                "registros": len(data),
+                "limit_requested": 5
+            }
+            print(f"✅ Endpoint datos (limit=5): OK - {len(data)} registros obtenidos")
+        else:
+            results["datos_limit"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (limit=5): ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["datos_limit"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (limit=5): ERROR - {str(e)}")
+    
+    # Test 6: Endpoint de datos con filtro por equipo
+    print("🔍 Probando endpoint de datos con filtro por equipo...")
+    try:
+        response = requests.get(f"{base_url}/datos?team=Boca%20Juniors&limit=3")
+        if response.status_code == 200:
+            data = response.json()
+            results["datos_filter"] = {
+                "status": "✅ OK", 
+                "registros": len(data),
+                "filtro_aplicado": "team=Boca Juniors"
+            }
+            print(f"✅ Endpoint datos (filtro): OK - {len(data)} registros de Boca Juniors")
+            if data:
+                print(f"   Primer jugador: {data[0].get('First name', '')} {data[0].get('Last name', '')}")
+        else:
+            results["datos_filter"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (filtro): ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["datos_filter"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (filtro): ERROR - {str(e)}")
+    
+    # Test 7: Endpoint de datos con filtro por temporada
+    print("🔍 Probando endpoint de datos con filtro por temporada...")
+    try:
+        response = requests.get(f"{base_url}/datos?season=2023&limit=3")
+        if response.status_code == 200:
+            data = response.json()
+            results["datos_season"] = {
+                "status": "✅ OK", 
+                "registros": len(data),
+                "filtro_aplicado": "season=2023"
+            }
+            print(f"✅ Endpoint datos (temporada): OK - {len(data)} registros de 2023")
+        else:
+            results["datos_season"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (temporada): ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["datos_season"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (temporada): ERROR - {str(e)}")
     
     return results
 

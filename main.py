@@ -1,6 +1,6 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
@@ -42,9 +42,24 @@ async def root():
     }
 
 @app.get("/datos", response_model=List[Dict[str, Any]])
-async def obtener_datos():
+async def obtener_datos(
+    page: int = Query(default=1, ge=1, description="Número de página (empezando en 1)"),
+    limit: int = Query(default=50, ge=1, le=100, description="Número de registros por página (máximo 100)"),
+    team: Optional[str] = Query(default=None, description="Filtrar por equipo"),
+    season: Optional[int] = Query(default=None, description="Filtrar por temporada"),
+    position: Optional[str] = Query(default=None, description="Filtrar por posición (G, F, C)"),
+    nationality: Optional[str] = Query(default=None, description="Filtrar por nacionalidad")
+):
     """
-    Endpoint que lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON.
+    Endpoint que lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación y filtros.
+    
+    Args:
+        page: Número de página (empezando en 1)
+        limit: Número de registros por página (máximo 100)
+        team: Filtrar por equipo
+        season: Filtrar por temporada
+        position: Filtrar por posición
+        nationality: Filtrar por nacionalidad
     
     Returns:
         List[Dict[str, Any]]: Lista de diccionarios con los datos del CSV
@@ -60,10 +75,36 @@ async def obtener_datos():
         
         logger.info(f"CSV leído exitosamente. Filas: {len(df)}, Columnas: {len(df.columns)}")
         
-        # Convertir el DataFrame a una lista de diccionarios
-        datos = df.to_dict(orient="records")
+        # Aplicar filtros si se proporcionan
+        if team:
+            df = df[df['Team'].str.contains(team, case=False, na=False)]
+            logger.info(f"Filtrado por equipo '{team}': {len(df)} registros")
+            
+        if season:
+            df = df[df['Season'] == season]
+            logger.info(f"Filtrado por temporada {season}: {len(df)} registros")
+            
+        if position:
+            df = df[df['Position'].str.contains(position, case=False, na=False)]
+            logger.info(f"Filtrado por posición '{position}': {len(df)} registros")
+            
+        if nationality:
+            df = df[df['Nationality'].str.contains(nationality, case=False, na=False)]
+            logger.info(f"Filtrado por nacionalidad '{nationality}': {len(df)} registros")
         
-        logger.info(f"Datos convertidos a JSON. Total de registros: {len(datos)}")
+        # Calcular paginación
+        total_records = len(df)
+        total_pages = (total_records + limit - 1) // limit
+        start_idx = (page - 1) * limit
+        end_idx = start_idx + limit
+        
+        # Aplicar paginación
+        df_paginated = df.iloc[start_idx:end_idx]
+        
+        # Convertir el DataFrame a una lista de diccionarios
+        datos = df_paginated.to_dict(orient="records")
+        
+        logger.info(f"Datos paginados: página {page}/{total_pages}, registros {start_idx+1}-{min(end_idx, total_records)} de {total_records}")
         
         return datos
         
@@ -80,6 +121,49 @@ async def health_check():
     Endpoint de verificación de salud de la API
     """
     return {"status": "healthy", "message": "API funcionando correctamente"}
+
+@app.get("/info")
+async def obtener_info():
+    """
+    Endpoint que devuelve información sobre los datos disponibles
+    """
+    try:
+        logger.info("Obteniendo información sobre los datos")
+        
+        # Leer el archivo CSV desde la URL
+        df = pd.read_csv(CSV_URL)
+        
+        # Obtener estadísticas básicas
+        total_records = len(df)
+        columns = list(df.columns)
+        
+        # Obtener valores únicos para filtros
+        teams = sorted(df['Team'].dropna().unique().tolist())
+        seasons = sorted(df['Season'].dropna().unique().tolist())
+        positions = sorted(df['Position'].dropna().unique().tolist())
+        nationalities = sorted(df['Nationality'].dropna().unique().tolist())
+        
+        return {
+            "total_records": total_records,
+            "columns": columns,
+            "filters_available": {
+                "teams": teams,
+                "seasons": seasons,
+                "positions": positions,
+                "nationalities": nationalities
+            },
+            "pagination": {
+                "default_page_size": 50,
+                "max_page_size": 100
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error al obtener información: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al obtener información: {str(e)}"
+        )
 
 if __name__ == "__main__":
     import uvicorn

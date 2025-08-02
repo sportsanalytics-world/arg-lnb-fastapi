@@ -9,6 +9,7 @@ Esta es una API REST construida con FastAPI que lee automáticamente un archivo 
 - **CORS habilitado**: Permite acceso desde cualquier dominio
 - **Tipado completo**: Usa type hints de Python
 - **Documentación automática**: Swagger UI en `/docs`
+- **Especificación OpenAPI**: Archivo `openapi.yaml` incluido
 - **Logging**: Registro de operaciones para debugging
 
 ## 📋 Requisitos
@@ -65,22 +66,78 @@ Una vez que la aplicación esté ejecutándose, puedes acceder a:
 - **Documentación Swagger**: http://localhost:8000/docs
 - **Documentación ReDoc**: http://localhost:8000/redoc
 - **Endpoint de datos**: http://localhost:8000/datos
+- **Información de datos**: http://localhost:8000/info
 - **Health check**: http://localhost:8000/health
 
 ## 📊 Endpoint Principal
 
 ### GET /datos
 
-Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON.
+Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación y filtros.
 
 **URL del CSV**: https://docs.google.com/spreadsheets/d/e/2PACX-1vSf4n2VLM5ie-XRD3_ZzwoOfukCTZLoF_KgJRsCKDHVZ-OJ9ugG1hL5gc32Y24gUgngxkzX-FuYpBF7/pub?gid=20714965&single=true&output=csv
 
-**Respuesta**: Lista de diccionarios con los datos del CSV
+**Parámetros de consulta**:
+- `page` (int, opcional): Número de página (default: 1)
+- `limit` (int, opcional): Registros por página (default: 50, máximo: 100)
+- `team` (string, opcional): Filtrar por equipo
+- `season` (int, opcional): Filtrar por temporada
+- `position` (string, opcional): Filtrar por posición (G, F, C)
+- `nationality` (string, opcional): Filtrar por nacionalidad
+
+**Respuesta**: Lista de diccionarios con los datos del CSV paginados
+
+**Ejemplos de uso**:
+```bash
+# Obtener primera página (50 registros por defecto)
+curl http://localhost:8000/datos
+
+# Obtener segunda página con 20 registros
+curl "http://localhost:8000/datos?page=2&limit=20"
+
+# Filtrar por equipo
+curl "http://localhost:8000/datos?team=Boca%20Juniors"
+
+# Filtrar por temporada y posición
+curl "http://localhost:8000/datos?season=2023&position=F"
+
+# Combinar filtros y paginación
+curl "http://localhost:8000/datos?team=Argentina&season=2023&page=1&limit=10"
+```
+
+### GET /info
+
+Devuelve información sobre los datos disponibles, incluyendo filtros y estadísticas.
+
+**Respuesta**: Información sobre columnas, filtros disponibles y configuración de paginación
 
 **Ejemplo de uso**:
 ```bash
-curl http://localhost:8000/datos
+curl http://localhost:8000/info
 ```
+
+## 📋 Especificación OpenAPI
+
+El proyecto incluye un archivo `openapi.yaml` con la especificación completa de la API en formato OpenAPI 3.1.0. Esta especificación incluye:
+
+- **Documentación completa** de todos los endpoints
+- **Esquemas de datos** para request/response
+- **Ejemplos de uso** para cada endpoint
+- **Parámetros de consulta** con validaciones
+- **Códigos de respuesta** y manejo de errores
+
+### Uso de la especificación OpenAPI:
+
+1. **Para ChatGPT y otros LLMs**: Usa el archivo `openapi.yaml` para configurar conectores
+2. **Para desarrollo**: Importa la especificación en herramientas como Postman
+3. **Para documentación**: La especificación se puede usar para generar documentación automática
+
+### Endpoints documentados:
+
+- `GET /` - Información de la API
+- `GET /datos` - Datos del CSV con paginación y filtros
+- `GET /info` - Información sobre los datos disponibles
+- `GET /health` - Verificación de salud
 
 ## 🚀 Despliegue
 
@@ -153,8 +210,14 @@ CSV_URL = "tu-nueva-url-del-csv"
 ARG-LNB-FastAPI/
 ├── main.py              # Archivo principal de la aplicación
 ├── requirements.txt     # Dependencias del proyecto
+├── openapi.yaml         # Especificación OpenAPI 3.0
 ├── README.md           # Este archivo
-└── .gitignore          # Archivos a ignorar por Git
+├── .gitignore          # Archivos a ignorar por Git
+├── render.yaml         # Configuración para Render
+├── Dockerfile          # Configuración para Docker
+├── docker-compose.yml  # Configuración para desarrollo local
+├── test_api.py         # Script de pruebas
+└── start.sh            # Script de inicio para Render
 ```
 
 ## 🐛 Troubleshooting
