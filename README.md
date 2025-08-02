@@ -241,6 +241,15 @@ ARG-LNB-FastAPI/
 
 Este proyecto está bajo la Licencia MIT.
 
+## 🔒 Información Legal
+
+- **[Política de Privacidad](privacy-policy.md)** - Cómo manejamos la información y datos
+- **[Términos de Servicio](terms-of-service.md)** - Términos de uso de la API
+
+### Cumplimiento con ChatGPT Customizado
+
+Esta API está diseñada para ser compatible con ChatGPT Customizado y cumple con todos los requisitos de privacidad y términos de servicio necesarios para la integración.
+
 ## 🤝 Contribuciones
 
 Las contribuciones son bienvenidas. Por favor, abre un issue o un pull request.
