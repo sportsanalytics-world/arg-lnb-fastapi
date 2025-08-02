@@ -78,13 +78,76 @@ Una vez que la aplicación esté ejecutándose, puedes acceder a:
 - **Información de datos**: http://localhost:8000/info
 - **Health check**: http://localhost:8000/health
 
-## 📊 Endpoint Principal
+
+## 📊 Endpoints Principales
 
 ### GET /datos
 
 Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación y filtros.
 
 **URL del CSV**: https://docs.google.com/spreadsheets/d/e/2PACX-1vSf4n2VLM5ie-XRD3_ZzwoOfukCTZLoF_KgJRsCKDHVZ-OJ9ugG1hL5gc32Y24gUgngxkzX-FuYpBF7/pub?gid=20714965&single=true&output=csv
+
+### GET /info
+
+Devuelve información sobre los datos disponibles, incluyendo filtros y estadísticas.
+
+**Respuesta**: Información sobre columnas, filtros disponibles y configuración de paginación
+
+**Ejemplo de uso**:
+```bash
+curl http://localhost:8000/info
+```
+
+## 🎯 Endpoint Principal Mejorado para ChatGPT
+
+El endpoint `/datos` ha sido mejorado para permitir consultas complejas y flexibles que el GPT personalizado puede usar para responder diferentes tipos de preguntas:
+
+### Funcionalidades Avanzadas
+
+**Agrupación de datos** (`group_by`):
+- `player`: Agrupa por jugador único, mostrando todos sus equipos y temporadas
+- `team`: Agrupa por equipo, mostrando estadísticas del equipo
+- `season`: Agrupa por temporada, mostrando estadísticas de la temporada
+
+**Estadísticas incluidas** (`include_stats=true`):
+- Información sobre filtros aplicados
+- Estadísticas de los datos obtenidos
+- Distribución de posiciones y nacionalidades
+
+### Ejemplos de Consultas Complejas
+
+**1. Jugadores nacidos en una fecha específica:**
+```bash
+curl "http://localhost:8000/datos?birthdate=2000-01-27&group_by=player&include_stats=true"
+```
+
+**2. Jugadores de un equipo en una temporada específica:**
+```bash
+curl "http://localhost:8000/datos?team=Boca%20Juniors&season=2023&group_by=player&include_stats=true"
+```
+
+**3. Jugadores que cambiaron de equipo en una temporada:**
+```bash
+curl "http://localhost:8000/datos?season=2023&group_by=player&include_stats=true"
+```
+*El GPT puede analizar los resultados para identificar jugadores con múltiples equipos*
+
+**4. Estadísticas de una temporada:**
+```bash
+curl "http://localhost:8000/datos?season=2023&group_by=season&include_stats=true"
+```
+
+**5. Carrera de un jugador específico:**
+```bash
+curl "http://localhost:8000/datos?first_name=Pablo&group_by=player&include_stats=true"
+```
+
+### Ventajas del Enfoque
+
+- **Flexibilidad**: Un solo endpoint puede manejar múltiples tipos de consultas
+- **Escalabilidad**: No se necesitan nuevos endpoints para nuevas consultas
+- **Eficiencia**: El GPT puede combinar parámetros para obtener la información necesaria
+- **Consistencia**: Todos los datos vienen del mismo endpoint con el mismo formato
 
 **Parámetros de consulta**:
 - `page` (int, opcional): Número de página (default: 1)

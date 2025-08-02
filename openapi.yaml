@@ -62,7 +62,7 @@ paths:
   /datos:
     get:
       summary: Obtener datos del CSV
-      description: Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación y filtros. Parámetros: page, limit, team, season, position, nationality, first_name, last_name, birthdate, height, weight.
+      description: Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación, filtros y opciones de agrupación. Parámetros: page, limit, team, season, position, nationality, first_name, last_name, birthdate, height, weight, group_by, include_stats.
       operationId: getDatos
       parameters:
         - name: page
@@ -159,6 +159,22 @@ paths:
             type: number
             format: float
             example: 85.0
+        - name: group_by
+          in: query
+          description: Agrupar resultados por: 'player' (jugador único), 'team' (por equipo), 'season' (por temporada)
+          required: false
+          schema:
+            type: string
+            enum: ["player", "team", "season"]
+            example: "player"
+        - name: include_stats
+          in: query
+          description: Incluir estadísticas básicas en la respuesta
+          required: false
+          schema:
+            type: boolean
+            default: false
+            example: true
       responses:
         '200':
           description: Lista de registros del CSV
@@ -261,6 +277,8 @@ paths:
                   message:
                     type: string
                     example: "API funcionando correctamente"
+
+
 
 components:
   schemas:
@@ -391,6 +409,8 @@ components:
           type: string
           description: Descripción del error
           example: "Error al leer el archivo CSV: Connection timeout"
+
+
 
 tags:
   - name: Data
