@@ -1,22 +1,7 @@
 openapi: 3.1.0
 info:
   title: ARG LNB FastAPI
-  description: |
-    API REST que lee automáticamente un archivo CSV público alojado en Google Drive y expone su contenido en formato JSON.
-    
-    ## Características principales:
-    - **Paginación**: Controla el número de registros devueltos
-    - **Filtros**: Filtra por equipo, temporada, posición y nacionalidad
-    - **CORS habilitado**: Permite acceso desde cualquier dominio
-    - **Documentación automática**: Swagger UI y ReDoc disponibles
-    
-    ## Datos disponibles:
-    - Jugadores de la Liga Nacional de Básquet (LNB) de Argentina
-    - Información personal, estadísticas y datos del equipo
-    - Datos desde 2020 hasta 2024
-    
-    ## URL del CSV fuente:
-    https://docs.google.com/spreadsheets/d/e/2PACX-1vSf4n2VLM5ie-XRD3_ZzwoOfukCTZLoF_KgJRsCKDHVZ-OJ9ugG1hL5gc32Y24gUgngxkzX-FuYpBF7/pub?gid=20714965&single=true&output=csv
+  description: API REST para datos de jugadores de la Liga Nacional de Básquet (LNB) de Argentina. Lee automáticamente un CSV público y expone datos con paginación, filtros y agrupación.
   version: 1.0.0
   contact:
     name: Sports Analytics World
@@ -33,7 +18,7 @@ paths:
   /:
     get:
       summary: Información de la API
-      description: Endpoint raíz que devuelve información sobre la API y sus endpoints disponibles
+      description: Endpoint raíz con información sobre la API
       operationId: getRoot
       responses:
         '200':
@@ -49,20 +34,11 @@ paths:
                   version:
                     type: string
                     example: "1.0.0"
-                  endpoints:
-                    type: object
-                    properties:
-                      datos:
-                        type: string
-                        example: "/datos - Obtiene los datos del CSV en formato JSON"
-                      docs:
-                        type: string
-                        example: "/docs - Documentación interactiva de la API"
 
   /datos:
     get:
       summary: Obtener datos del CSV
-      description: Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación, filtros y opciones de agrupación. Parámetros: page, limit, team, season, position, nationality, first_name, last_name, birthdate, height, weight, group_by, include_stats.
+      description: Obtiene datos con paginación, filtros y agrupación. Usar limit para controlar resultados.
       operationId: getDatos
       parameters:
         - name: page
@@ -83,10 +59,10 @@ paths:
             minimum: 1
             maximum: 100
             default: 50
-            example: 50
+            example: 20
         - name: team
           in: query
-          description: Filtrar por equipo (búsqueda parcial)
+          description: Filtrar por equipo
           required: false
           schema:
             type: string
@@ -109,39 +85,31 @@ paths:
             example: "F"
         - name: nationality
           in: query
-          description: Filtrar por nacionalidad (búsqueda parcial)
+          description: Filtrar por nacionalidad
           required: false
           schema:
             type: string
             example: "Argentina"
         - name: first_name
           in: query
-          description: Filtrar por nombre ajustado del jugador (búsqueda parcial)
+          description: Filtrar por nombre ajustado del jugador
           required: false
           schema:
             type: string
             example: "Pablo"
         - name: last_name
           in: query
-          description: Filtrar por apellido ajustado del jugador (búsqueda parcial)
+          description: Filtrar por apellido ajustado del jugador
           required: false
           schema:
             type: string
             example: "Aaron"
-        - name: adjusted_first_name
-          in: query
-          description: Filtrar por nombre ajustado del jugador (búsqueda parcial)
-          required: false
-          schema:
-            type: string
-            example: "Pablo"
         - name: birthdate
           in: query
-          description: Filtrar por fecha de nacimiento (formato YYYY-MM-DD)
+          description: Filtrar por fecha de nacimiento (YYYY-MM-DD)
           required: false
           schema:
             type: string
-            format: date
             example: "2000-01-27"
         - name: height
           in: query
@@ -149,7 +117,6 @@ paths:
           required: false
           schema:
             type: number
-            format: float
             example: 190.0
         - name: weight
           in: query
@@ -157,11 +124,10 @@ paths:
           required: false
           schema:
             type: number
-            format: float
             example: 85.0
         - name: group_by
           in: query
-          description: Agrupar resultados por: 'player' (jugador único), 'team' (por equipo), 'season' (por temporada)
+          description: Agrupar por player, team, o season
           required: false
           schema:
             type: string
@@ -169,7 +135,7 @@ paths:
             example: "player"
         - name: include_stats
           in: query
-          description: Incluir estadísticas básicas en la respuesta
+          description: Incluir estadísticas en la respuesta
           required: false
           schema:
             type: boolean
@@ -177,29 +143,52 @@ paths:
             example: true
       responses:
         '200':
-          description: Lista de registros del CSV
+          description: Datos del CSV
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Player'
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/Player'
+                  - $ref: '#/components/schemas/DataWithStats'
               examples:
-                sample_data:
-                  summary: Ejemplo de respuesta
+                normal_response:
+                  summary: Respuesta normal
                   value:
-                    - First name: "Pablo"
-                      Last name: "Aaron"
-                      Adjusted first name: "Pablo"
-                      Adjusted last name: "Aaron"
-                      Team: "Boca Juniors"
-                      Season: 2020
-                      League: "AR_LNB"
-                      Position: "F"
-                      Height: 198.0
-                      Weight: null
-                      Nationality: "Argentina"
-                      Birthdate: "2000-01-27"
+                    - firstName: "Pablo"
+                      lastName: "Aaron"
+                      adjustedFirstName: "Pablo"
+                      adjustedLastName: "Aaron"
+                      team: "Boca Juniors"
+                      season: 2020
+                      position: "F"
+                      height: 198.0
+                      weight: null
+                      nationality: "Argentina"
+                      birthdate: "2000-01-27"
+                stats_response:
+                  summary: Respuesta con estadísticas
+                  value:
+                    data:
+                      - nombreAjustado: "Juan Pablo"
+                        apellidoAjustado: "Cantero"
+                        equipos: ["Union SF", "Comunicaciones Mercedes"]
+                        temporadas: [2023]
+                        posiciones: ["PG", "C"]
+                        altura: 182.0
+                        peso: 83.0
+                        nacionalidad: "Argentina"
+                        fechaNacimiento: "1982-09-19"
+                    stats:
+                      totalRecords: 15
+                      totalPages: 5
+                      currentPage: 1
+                      recordsPerPage: 3
+                      dataStats:
+                        uniquePlayers: 15
+                        uniqueTeams: 14
+                        uniqueSeasons: 5
         '500':
           description: Error interno del servidor
           content:
@@ -210,47 +199,15 @@ paths:
   /info:
     get:
       summary: Información sobre los datos
-      description: Devuelve información sobre los datos disponibles: total de registros, columnas, filtros disponibles y configuración de paginación.
+      description: Información sobre datos disponibles, filtros y paginación
       operationId: getInfo
       responses:
         '200':
-          description: Información sobre los datos disponibles
+          description: Información sobre los datos
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Info'
-              examples:
-                sample_info:
-                  summary: Ejemplo de respuesta
-                  value:
-                    total_records: 1914
-                    columns:
-                      - "First name"
-                      - "Last name"
-                      - "Adjusted first name"
-                      - "Adjusted last name"
-                      - "Team"
-                      - "Season"
-                      - "League"
-                      - "Position"
-                      - "Height"
-                      - "Weight"
-                      - "Nationality"
-                      - "Birthdate"
-                    filters_available:
-                      teams:
-                        - "Boca Juniors"
-                        - "Quimsa"
-                        - "San Lorenzo de Almagro"
-                      seasons: [2020, 2021, 2022, 2023, 2024]
-                      positions: ["G", "F", "C", "PG", "SG", "SF", "PF"]
-                      nationalities:
-                        - "Argentina"
-                        - "United States"
-                        - "Brazil"
-                    pagination:
-                      default_page_size: 50
-                      max_page_size: 100
         '500':
           description: Error interno del servidor
           content:
@@ -261,11 +218,11 @@ paths:
   /health:
     get:
       summary: Verificación de salud
-      description: Endpoint de verificación de salud de la API
+      description: Estado de salud de la API
       operationId: getHealth
       responses:
         '200':
-          description: Estado de salud de la API
+          description: Estado de salud
           content:
             application/json:
               schema:
@@ -278,128 +235,245 @@ paths:
                     type: string
                     example: "API funcionando correctamente"
 
-
-
 components:
   schemas:
     Player:
       type: object
       description: Información de un jugador
       properties:
-        First name:
+        firstName:
           type: string
           description: Nombre del jugador
           example: "Pablo"
-        Last name:
+        lastName:
           type: string
           description: Apellido del jugador
           example: "Aaron"
-        Adjusted first name:
+        adjustedFirstName:
           type: string
           description: Nombre ajustado del jugador
           example: "Pablo"
-        Adjusted last name:
+        adjustedLastName:
           type: string
           description: Apellido ajustado del jugador
           example: "Aaron"
-        Team:
+        team:
           type: string
           description: Equipo del jugador
           example: "Boca Juniors"
-        Season:
+        season:
           type: integer
           description: Temporada
           example: 2020
-        League:
-          type: string
-          description: Liga
-          example: "AR_LNB"
-        Position:
+        position:
           type: string
           description: Posición del jugador
           enum: ["G", "F", "C", "PG", "SG", "SF", "PF", "-"]
           example: "F"
-        Height:
+        height:
           type: number
           description: Altura en centímetros
           example: 198.0
-        Weight:
-          type: [number, "null"]
+        weight:
+          type: number
+          nullable: true
           description: Peso en kilogramos
           example: 85.0
-        Nationality:
+        nationality:
           type: string
           description: Nacionalidad del jugador
           example: "Argentina"
-        Birthdate:
+        birthdate:
           type: string
-          description: Fecha de nacimiento (formato YYYY-MM-DD)
+          description: Fecha de nacimiento
           example: "2000-01-27"
-      required:
-        - First name
-        - Last name
-        - Team
-        - Season
-        - League
-        - Position
-        - Height
-        - Nationality
-        - Birthdate
+
+    DataWithStats:
+      type: object
+      description: Respuesta con datos y estadísticas
+      properties:
+        data:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Player'
+              - $ref: '#/components/schemas/GroupedPlayer'
+              - $ref: '#/components/schemas/GroupedTeam'
+              - $ref: '#/components/schemas/GroupedSeason'
+        stats:
+          $ref: '#/components/schemas/Stats'
+
+    GroupedPlayer:
+      type: object
+      description: Jugador agrupado (cuando group_by=player)
+      properties:
+        nombreAjustado:
+          type: string
+          example: "Juan Pablo"
+        apellidoAjustado:
+          type: string
+          example: "Cantero"
+        equipos:
+          type: array
+          items:
+            type: string
+          example: ["Union SF", "Comunicaciones Mercedes"]
+        temporadas:
+          type: array
+          items:
+            type: integer
+          example: [2023]
+        posiciones:
+          type: array
+          items:
+            type: string
+          example: ["PG", "C"]
+        altura:
+          type: number
+          example: 182.0
+        peso:
+          type: number
+          nullable: true
+          example: 83.0
+        nacionalidad:
+          type: string
+          example: "Argentina"
+        fechaNacimiento:
+          type: string
+          example: "1982-09-19"
+
+    GroupedTeam:
+      type: object
+      description: Equipo agrupado (cuando group_by=team)
+      properties:
+        equipo:
+          type: string
+          example: "Boca Juniors"
+        totalJugadores:
+          type: integer
+          example: 18
+        temporadas:
+          type: array
+          items:
+            type: integer
+          example: [2023]
+        posiciones:
+          type: array
+          items:
+            type: string
+          example: ["C"]
+        nacionalidades:
+          type: array
+          items:
+            type: string
+          example: ["Argentina"]
+
+    GroupedSeason:
+      type: object
+      description: Temporada agrupada (cuando group_by=season)
+      properties:
+        temporada:
+          type: integer
+          example: 2023
+        totalJugadores:
+          type: integer
+          example: 376
+        equipos:
+          type: array
+          items:
+            type: string
+          example: ["Boca Juniors", "Quimsa"]
+        posiciones:
+          type: array
+          items:
+            type: string
+          example: ["G", "F", "C"]
+        nacionalidades:
+          type: array
+          items:
+            type: string
+          example: ["Argentina", "United States"]
+
+    Stats:
+      type: object
+      description: Estadísticas de la respuesta
+      properties:
+        totalRecords:
+          type: integer
+          example: 376
+        totalPages:
+          type: integer
+          example: 19
+        currentPage:
+          type: integer
+          example: 1
+        recordsPerPage:
+          type: integer
+          example: 20
+        filtersApplied:
+          type: object
+          properties:
+            team:
+              type: string
+            season:
+              type: integer
+            position:
+              type: string
+            nationality:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            birthdate:
+              type: string
+            height:
+              type: number
+            weight:
+              type: number
+        dataStats:
+          type: object
+          properties:
+            uniquePlayers:
+              type: integer
+              example: 376
+            uniqueTeams:
+              type: integer
+              example: 20
+            uniqueSeasons:
+              type: integer
+              example: 1
 
     Info:
       type: object
       description: Información sobre los datos disponibles
       properties:
-        total_records:
+        totalRecords:
           type: integer
-          description: Número total de registros
           example: 1914
-        columns:
+        totalColumns:
+          type: integer
+          example: 12
+        teams:
           type: array
           items:
             type: string
-          description: Lista de columnas disponibles
-          example: ["First name", "Last name", "Team", "Season"]
-        filters_available:
-          type: object
-          description: Filtros disponibles
-          properties:
-            teams:
-              type: array
-              items:
-                type: string
-              description: Lista de equipos disponibles
-              example: ["Boca Juniors", "Quimsa"]
-            seasons:
-              type: array
-              items:
-                type: integer
-              description: Lista de temporadas disponibles
-              example: [2020, 2021, 2022, 2023, 2024]
-            positions:
-              type: array
-              items:
-                type: string
-              description: Lista de posiciones disponibles
-              example: ["G", "F", "C", "PG", "SG", "SF", "PF"]
-            nationalities:
-              type: array
-              items:
-                type: string
-              description: Lista de nacionalidades disponibles
-              example: ["Argentina", "United States", "Brazil"]
-        pagination:
-          type: object
-          description: Configuración de paginación
-          properties:
-            default_page_size:
-              type: integer
-              description: Tamaño de página por defecto
-              example: 50
-            max_page_size:
-              type: integer
-              description: Tamaño máximo de página
-              example: 100
+          example: ["Boca Juniors", "Quimsa"]
+        seasons:
+          type: array
+          items:
+            type: integer
+          example: [2020, 2021, 2022, 2023, 2024]
+        positions:
+          type: array
+          items:
+            type: string
+          example: ["G", "F", "C", "PG", "SG", "SF", "PF"]
+        nationalities:
+          type: array
+          items:
+            type: string
+          example: ["Argentina", "United States", "Brazil"]
 
     Error:
       type: object
@@ -407,10 +481,7 @@ components:
       properties:
         detail:
           type: string
-          description: Descripción del error
-          example: "Error al leer el archivo CSV: Connection timeout"
-
-
+          example: "Error al leer el archivo CSV"
 
 tags:
   - name: Data
