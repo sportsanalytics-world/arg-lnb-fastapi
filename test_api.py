@@ -149,6 +149,120 @@ def test_api_endpoints(base_url: str = "http://localhost:8000") -> Dict[str, Any
         results["datos_season"] = {"status": "❌ ERROR", "error": str(e)}
         print(f"❌ Endpoint datos (temporada): ERROR - {str(e)}")
     
+    # Test 8: Endpoint de datos con filtro por nombre ajustado
+    print("🔍 Probando endpoint de datos con filtro por nombre ajustado...")
+    try:
+        response = requests.get(f"{base_url}/datos?first_name=Pablo&limit=3")
+        if response.status_code == 200:
+            data = response.json()
+            results["datos_first_name"] = {
+                "status": "✅ OK", 
+                "registros": len(data),
+                "filtro_aplicado": "first_name=Pablo"
+            }
+            print(f"✅ Endpoint datos (nombre): OK - {len(data)} registros para 'Pablo'")
+        else:
+            results["datos_first_name"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (nombre): ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["datos_first_name"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (nombre): ERROR - {str(e)}")
+    
+    # Test 9: Endpoint de datos con filtro por apellido ajustado
+    print("🔍 Probando endpoint de datos con filtro por apellido ajustado...")
+    try:
+        response = requests.get(f"{base_url}/datos?last_name=Aaron&limit=3")
+        if response.status_code == 200:
+            data = response.json()
+            results["datos_last_name"] = {
+                "status": "✅ OK", 
+                "registros": len(data),
+                "filtro_aplicado": "last_name=Aaron"
+            }
+            print(f"✅ Endpoint datos (apellido): OK - {len(data)} registros para 'Aaron'")
+        else:
+            results["datos_last_name"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (apellido): ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["datos_last_name"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (apellido): ERROR - {str(e)}")
+    
+    # Test 10: Endpoint de datos con filtro por fecha de nacimiento
+    print("🔍 Probando endpoint de datos con filtro por fecha de nacimiento...")
+    try:
+        response = requests.get(f"{base_url}/datos?birthdate=2000-01-27&limit=3")
+        if response.status_code == 200:
+            data = response.json()
+            results["datos_birthdate"] = {
+                "status": "✅ OK", 
+                "registros": len(data),
+                "filtro_aplicado": "birthdate=2000-01-27"
+            }
+            print(f"✅ Endpoint datos (fecha): OK - {len(data)} registros para '2000-01-27'")
+        else:
+            results["datos_birthdate"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (fecha): ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["datos_birthdate"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (fecha): ERROR - {str(e)}")
+    
+    # Test 11: Endpoint de datos con filtro por altura
+    print("🔍 Probando endpoint de datos con filtro por altura...")
+    try:
+        response = requests.get(f"{base_url}/datos?height=198&limit=3")
+        if response.status_code == 200:
+            data = response.json()
+            results["datos_height"] = {
+                "status": "✅ OK", 
+                "registros": len(data),
+                "filtro_aplicado": "height=198"
+            }
+            print(f"✅ Endpoint datos (altura): OK - {len(data)} registros para altura 198cm")
+        else:
+            results["datos_height"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (altura): ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["datos_height"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (altura): ERROR - {str(e)}")
+    
+    # Test 12: Endpoint de datos con filtro por peso
+    print("🔍 Probando endpoint de datos con filtro por peso...")
+    try:
+        response = requests.get(f"{base_url}/datos?weight=85&limit=3")
+        if response.status_code == 200:
+            data = response.json()
+            results["datos_weight"] = {
+                "status": "✅ OK", 
+                "registros": len(data),
+                "filtro_aplicado": "weight=85"
+            }
+            print(f"✅ Endpoint datos (peso): OK - {len(data)} registros para peso 85kg")
+        else:
+            results["datos_weight"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (peso): ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["datos_weight"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (peso): ERROR - {str(e)}")
+    
+    # Test 13: Endpoint de datos con múltiples filtros
+    print("🔍 Probando endpoint de datos con múltiples filtros...")
+    try:
+        response = requests.get(f"{base_url}/datos?first_name=Pablo&team=Boca%20Juniors&limit=2")
+        if response.status_code == 200:
+            data = response.json()
+            results["datos_multiple"] = {
+                "status": "✅ OK", 
+                "registros": len(data),
+                "filtros_aplicados": "first_name=Pablo, team=Boca Juniors"
+            }
+            print(f"✅ Endpoint datos (múltiples): OK - {len(data)} registros con filtros combinados")
+        else:
+            results["datos_multiple"] = {"status": "❌ ERROR", "status_code": response.status_code}
+            print(f"❌ Endpoint datos (múltiples): ERROR - Status {response.status_code}")
+    except Exception as e:
+        results["datos_multiple"] = {"status": "❌ ERROR", "error": str(e)}
+        print(f"❌ Endpoint datos (múltiples): ERROR - {str(e)}")
+    
     return results
 
 def main():

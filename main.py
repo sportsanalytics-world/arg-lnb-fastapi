@@ -48,7 +48,12 @@ async def obtener_datos(
     team: Optional[str] = Query(default=None, description="Filtrar por equipo"),
     season: Optional[int] = Query(default=None, description="Filtrar por temporada"),
     position: Optional[str] = Query(default=None, description="Filtrar por posición (G, F, C)"),
-    nationality: Optional[str] = Query(default=None, description="Filtrar por nacionalidad")
+    nationality: Optional[str] = Query(default=None, description="Filtrar por nacionalidad"),
+    first_name: Optional[str] = Query(default=None, description="Filtrar por nombre ajustado del jugador"),
+    last_name: Optional[str] = Query(default=None, description="Filtrar por apellido ajustado del jugador"),
+    birthdate: Optional[str] = Query(default=None, description="Filtrar por fecha de nacimiento (YYYY-MM-DD)"),
+    height: Optional[float] = Query(default=None, description="Filtrar por altura en cm"),
+    weight: Optional[float] = Query(default=None, description="Filtrar por peso en kg")
 ):
     """
     Endpoint que lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación y filtros.
@@ -91,6 +96,26 @@ async def obtener_datos(
         if nationality:
             df = df[df['Nationality'].str.contains(nationality, case=False, na=False)]
             logger.info(f"Filtrado por nacionalidad '{nationality}': {len(df)} registros")
+            
+        if first_name:
+            df = df[df['Adjusted first name'].str.contains(first_name, case=False, na=False)]
+            logger.info(f"Filtrado por nombre ajustado '{first_name}': {len(df)} registros")
+            
+        if last_name:
+            df = df[df['Adjusted last name'].str.contains(last_name, case=False, na=False)]
+            logger.info(f"Filtrado por apellido ajustado '{last_name}': {len(df)} registros")
+            
+        if birthdate:
+            df = df[df['Birthdate'].str.contains(birthdate, case=False, na=False)]
+            logger.info(f"Filtrado por fecha de nacimiento '{birthdate}': {len(df)} registros")
+            
+        if height is not None:
+            df = df[df['Height'] == height]
+            logger.info(f"Filtrado por altura {height}cm: {len(df)} registros")
+            
+        if weight is not None:
+            df = df[df['Weight'] == weight]
+            logger.info(f"Filtrado por peso {weight}kg: {len(df)} registros")
         
         # Calcular paginación
         total_records = len(df)

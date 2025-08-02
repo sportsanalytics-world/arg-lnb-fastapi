@@ -68,9 +68,9 @@ paths:
         Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con paginación y filtros.
         
         **Paginación:** `page` (número de página), `limit` (registros por página, máximo 100)
-        **Filtros:** `team` (equipo), `season` (temporada), `position` (posición), `nationality` (nacionalidad)
+        **Filtros:** `team`, `season`, `position`, `nationality`, `first_name`, `last_name`, `birthdate`, `height`, `weight`
         
-        **Ejemplos:** `/datos?limit=5`, `/datos?team=Boca%20Juniors`, `/datos?season=2023&position=F`
+        **Ejemplos:** `/datos?limit=5`, `/datos?team=Boca%20Juniors`, `/datos?first_name=Pablo`
       operationId: getDatos
       parameters:
         - name: page
@@ -122,6 +122,51 @@ paths:
           schema:
             type: string
             example: "Argentina"
+        - name: first_name
+          in: query
+          description: Filtrar por nombre ajustado del jugador (búsqueda parcial)
+          required: false
+          schema:
+            type: string
+            example: "Pablo"
+        - name: last_name
+          in: query
+          description: Filtrar por apellido ajustado del jugador (búsqueda parcial)
+          required: false
+          schema:
+            type: string
+            example: "Aaron"
+        - name: adjusted_first_name
+          in: query
+          description: Filtrar por nombre ajustado del jugador (búsqueda parcial)
+          required: false
+          schema:
+            type: string
+            example: "Pablo"
+        - name: birthdate
+          in: query
+          description: Filtrar por fecha de nacimiento (formato YYYY-MM-DD)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2000-01-27"
+        - name: height
+          in: query
+          description: Filtrar por altura en centímetros
+          required: false
+          schema:
+            type: number
+            format: float
+            example: 190.0
+        - name: weight
+          in: query
+          description: Filtrar por peso en kilogramos
+          required: false
+          schema:
+            type: number
+            format: float
+            example: 85.0
       responses:
         '200':
           description: Lista de registros del CSV

@@ -84,6 +84,11 @@ Lee el archivo CSV desde Google Drive y devuelve los datos en formato JSON con p
 - `season` (int, opcional): Filtrar por temporada
 - `position` (string, opcional): Filtrar por posición (G, F, C)
 - `nationality` (string, opcional): Filtrar por nacionalidad
+- `first_name` (string, opcional): Filtrar por nombre ajustado del jugador
+- `last_name` (string, opcional): Filtrar por apellido ajustado del jugador
+- `birthdate` (string, opcional): Filtrar por fecha de nacimiento (YYYY-MM-DD)
+- `height` (float, opcional): Filtrar por altura en cm
+- `weight` (float, opcional): Filtrar por peso en kg
 
 **Respuesta**: Lista de diccionarios con los datos del CSV paginados
 
@@ -103,6 +108,21 @@ curl "http://localhost:8000/datos?season=2023&position=F"
 
 # Combinar filtros y paginación
 curl "http://localhost:8000/datos?team=Argentina&season=2023&page=1&limit=10"
+
+# Buscar por nombre
+curl "http://localhost:8000/datos?first_name=Pablo&limit=5"
+
+# Buscar por apellido
+curl "http://localhost:8000/datos?last_name=Aaron&limit=3"
+
+# Buscar por fecha de nacimiento
+curl "http://localhost:8000/datos?birthdate=2000-01-27&limit=5"
+
+# Buscar por altura específica
+curl "http://localhost:8000/datos?height=190&limit=3"
+
+# Buscar por peso específico
+curl "http://localhost:8000/datos?weight=85&limit=3"
 ```
 
 ### GET /info
