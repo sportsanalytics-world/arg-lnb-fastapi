@@ -55,7 +55,7 @@ async def obtener_datos(
     birthdate: Optional[str] = Query(default=None, description="Filtrar por fecha de nacimiento (YYYY-MM-DD)"),
     height: Optional[float] = Query(default=None, description="Filtrar por altura en cm"),
     weight: Optional[float] = Query(default=None, description="Filtrar por peso en kg"),
-    group_by: Optional[str] = Query(default=None, description="Agrupar resultados por: 'player' (jugador único), 'team' (por equipo), 'season' (por temporada)"),
+    group_by: Optional[str] = Query(default=None, description="Agrupar resultados por: 'player' (jugador único), 'team' (por equipo), 'season' (por temporada), 'career' (trayectoria completa por jugador)"),
     include_stats: Optional[bool] = Query(default=False, description="Incluir estadísticas básicas en la respuesta")
 ):
     """
@@ -229,6 +229,96 @@ async def obtener_datos(
                 start_idx = (page - 1) * limit
                 end_idx = start_idx + limit
                 datos = datos[start_idx:end_idx]
+                
+            elif group_by == "career":
+                # Agrupar por jugador mostrando su trayectoria completa (temporada + equipo)
+                df_grouped = df.groupby(['First name', 'Last name', 'Adjusted first name', 'Adjusted last name']).agg({
+                    'Team': list,
+                    'Season': list,
+                    'Position': lambda x: list(set([str(item) for item in x if pd.notna(item)])),
+                    'Height': 'first',
+                    'Weight': 'first',
+                    'Nationality': 'first',
+                    'Birthdate': 'first'
+                }).reset_index()
+                
+                # Convertir a formato de respuesta con trayectoria cronológica
+                datos = []
+                for _, row in df_grouped.iterrows():
+                    # Manejar valores NaN e inf para JSON
+                    altura = row['Height']
+                    if pd.isna(altura) or np.isinf(altura):
+                        altura = None
+                        
+                    peso = row['Weight']
+                    if pd.isna(peso) or np.isinf(peso):
+                        peso = None
+                    
+                    # Verificar que no haya valores problemáticos en otros campos
+                    nacionalidad = row['Nationality']
+                    if pd.isna(nacionalidad):
+                        nacionalidad = None
+                        
+                    fecha_nacimiento = row['Birthdate']
+                    if pd.isna(fecha_nacimiento):
+                        fecha_nacimiento = None
+                    
+                    # Crear trayectoria cronológica (temporada + equipo)
+                    trayectoria = []
+                    equipos = row['Team']
+                    temporadas = row['Season']
+                    
+                    # Crear pares temporada-equipo y ordenarlos cronológicamente
+                    pares_temp_equipo: list[dict[str, int | str]] = []
+                    for i in range(len(equipos)):
+                        if pd.notna(equipos[i]) and pd.notna(temporadas[i]):
+                            pares_temp_equipo.append({
+                                'temporada': int(temporadas[i]),
+                                'equipo': str(equipos[i])
+                            })
+                    
+                    # Ordenar por temporada
+                    pares_temp_equipo.sort(key=lambda x: x['temporada'])
+                    
+                    # Agrupar por temporada si un jugador jugó en múltiples equipos en la misma temporada
+                    trayectoria_agrupada: dict[int, list[str]] = {}
+                    for par in pares_temp_equipo:
+                        temp = int(par['temporada'])
+                        equipo = str(par['equipo'])
+                        if temp not in trayectoria_agrupada:
+                            trayectoria_agrupada[temp] = []
+                        if equipo not in trayectoria_agrupada[temp]:
+                            trayectoria_agrupada[temp].append(equipo)
+                    
+                    # Convertir a lista ordenada
+                    for temp in sorted(trayectoria_agrupada.keys()):
+                        trayectoria.append({
+                            'temporada': temp,
+                            'equipos': trayectoria_agrupada[temp]
+                        })
+                    
+                    datos.append({
+                        "nombre": str(row['First name']) if pd.notna(row['First name']) else None,
+                        "apellido": str(row['Last name']) if pd.notna(row['Last name']) else None,
+                        "nombre_ajustado": str(row['Adjusted first name']) if pd.notna(row['Adjusted first name']) else None,
+                        "apellido_ajustado": str(row['Adjusted last name']) if pd.notna(row['Adjusted last name']) else None,
+                        "trayectoria": trayectoria,
+                        "posiciones": [str(item) for item in row['Position'] if pd.notna(item)] if isinstance(row['Position'], list) else [],
+                        "altura": altura,
+                        "peso": peso,
+                        "nacionalidad": nacionalidad,
+                        "fecha_nacimiento": fecha_nacimiento,
+                        "total_temporadas": len(trayectoria_agrupada),
+                        "total_equipos": len(set([equipo for temp in trayectoria_agrupada.values() for equipo in temp]))
+                    })
+                
+                # Aplicar paginación a datos agrupados
+                total_records = len(datos)
+                total_pages = (total_records + limit - 1) // limit
+                start_idx = (page - 1) * limit
+                end_idx = start_idx + limit
+                datos = datos[start_idx:end_idx]
+                
             else:
                 # Agrupación no válida, continuar con datos normales
                 logger.warning(f"Agrupación '{group_by}' no válida, devolviendo datos sin agrupar")

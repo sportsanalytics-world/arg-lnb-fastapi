@@ -108,6 +108,7 @@ El endpoint `/datos` ha sido mejorado para permitir consultas complejas y flexib
 - `player`: Agrupa por jugador único, mostrando todos sus equipos y temporadas
 - `team`: Agrupa por equipo, mostrando estadísticas del equipo
 - `season`: Agrupa por temporada, mostrando estadísticas de la temporada
+- `career`: **NUEVO** - Muestra la trayectoria completa de cada jugador con temporadas y equipos organizados cronológicamente
 
 **Estadísticas incluidas** (`include_stats=true`):
 - Información sobre filtros aplicados
@@ -141,6 +142,12 @@ curl "http://localhost:8000/datos?season=2023&group_by=season&include_stats=true
 ```bash
 curl "http://localhost:8000/datos?first_name=Pablo&group_by=player&include_stats=true"
 ```
+
+**6. Trayectoria completa de un jugador (cronológica):**
+```bash
+curl "http://localhost:8000/datos?first_name=Pablo&group_by=career&include_stats=true"
+```
+*Muestra cada temporada con los equipos donde jugó, ordenados cronológicamente*
 
 ### Ventajas del Enfoque
 

@@ -177,6 +177,25 @@ if success:
         total_records = stats.get('total_records', 0)
         print_result("Endpoint datos (agrupado + estadísticas)", True, f"{total_records} jugadores únicos")
 
+# Test 17: Endpoint de datos con trayectoria completa (career)
+print("🔍 Probando endpoint de datos con trayectoria completa...")
+success = test_endpoint("datos_career", f"{base_url}/datos?first_name=Pablo&group_by=career&limit=3")
+if success:
+    data = results["datos_career"]["data"]
+    if isinstance(data, dict) and 'data' in data:
+        data = data['data']
+    print_result("Endpoint datos (trayectoria completa)", True, f"{len(data)} jugadores con trayectoria")
+
+# Test 18: Endpoint de datos con trayectoria completa y estadísticas
+print("🔍 Probando endpoint de datos con trayectoria completa y estadísticas...")
+success = test_endpoint("datos_career_stats", f"{base_url}/datos?first_name=Pablo&group_by=career&include_stats=true&limit=3")
+if success:
+    data = results["datos_career_stats"]["data"]
+    if isinstance(data, dict) and 'stats' in data:
+        stats = data['stats']
+        total_records = stats.get('total_records', 0)
+        print_result("Endpoint datos (trayectoria + estadísticas)", True, f"{total_records} jugadores con trayectoria")
+
 print()
 print("=" * 60)
 print("📊 RESUMEN DE PRUEBAS")

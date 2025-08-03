@@ -127,11 +127,11 @@ paths:
             example: 85.0
         - name: group_by
           in: query
-          description: Agrupar por player, team, o season
+          description: Agrupar por player, team, season, o career
           required: false
           schema:
             type: string
-            enum: ["player", "team", "season"]
+            enum: ["player", "team", "season", "career"]
             example: "player"
         - name: include_stats
           in: query
@@ -151,6 +151,18 @@ paths:
                   - type: array
                     items:
                       $ref: '#/components/schemas/Player'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/GroupedPlayer'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/GroupedTeam'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/GroupedSeason'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/GroupedCareer'
                   - $ref: '#/components/schemas/DataWithStats'
               examples:
                 normal_response:
@@ -393,6 +405,61 @@ components:
           items:
             type: string
           example: ["Argentina", "United States"]
+
+    GroupedCareer:
+      type: object
+      description: Trayectoria completa del jugador (cuando group_by=career)
+      properties:
+        nombre:
+          type: string
+          example: "Pablo"
+        apellido:
+          type: string
+          example: "Aaron"
+        nombreAjustado:
+          type: string
+          example: "Pablo"
+        apellidoAjustado:
+          type: string
+          example: "Aaron"
+        trayectoria:
+          type: array
+          items:
+            type: object
+            properties:
+              temporada:
+                type: integer
+                example: 2023
+              equipos:
+                type: array
+                items:
+                  type: string
+                example: ["Boca Juniors", "Quimsa"]
+        posiciones:
+          type: array
+          items:
+            type: string
+          example: ["F", "C"]
+        altura:
+          type: number
+          nullable: true
+          example: 198.0
+        peso:
+          type: number
+          nullable: true
+          example: 85.0
+        nacionalidad:
+          type: string
+          example: "Argentina"
+        fechaNacimiento:
+          type: string
+          example: "2000-01-27"
+        totalTemporadas:
+          type: integer
+          example: 3
+        totalEquipos:
+          type: integer
+          example: 2
 
     Stats:
       type: object

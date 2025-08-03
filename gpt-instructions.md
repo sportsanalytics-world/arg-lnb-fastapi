@@ -90,6 +90,18 @@ GET /datos?season=2023&group_by=player&page=2&limit=20
 ...
 ```
 
+### **Ejemplo 4: Trayectoria completa de un jugador (cronológica)**
+```
+// Paso 1: Obtener información
+GET /datos?first_name=Pablo&group_by=career&limit=1&include_stats=true
+
+// Paso 2: Procesar todas las páginas
+GET /datos?first_name=Pablo&group_by=career&page=1&limit=20
+GET /datos?first_name=Pablo&group_by=career&page=2&limit=20
+...
+```
+*La respuesta incluye `trayectoria` con temporadas ordenadas cronológicamente y equipos por temporada*
+
 ## Estructura de Respuestas
 
 ### **Respuesta Normal (sin include_stats)**
@@ -131,6 +143,35 @@ GET /datos?season=2023&group_by=player&page=2&limit=20
     }
   }
 }
+```
+
+### **Respuesta con Trayectoria (group_by=career)**
+```json
+[
+  {
+    "nombre": "Pablo",
+    "apellido": "Aaron",
+    "nombreAjustado": "Pablo",
+    "apellidoAjustado": "Aaron",
+    "trayectoria": [
+      {
+        "temporada": 2020,
+        "equipos": ["Boca Juniors"]
+      },
+      {
+        "temporada": 2023,
+        "equipos": ["Quimsa", "Boca Juniors"]
+      }
+    ],
+    "posiciones": ["F", "C"],
+    "altura": 198.0,
+    "peso": null,
+    "nacionalidad": "Argentina",
+    "fechaNacimiento": "2000-01-27",
+    "totalTemporadas": 2,
+    "totalEquipos": 2
+  }
+]
 ```
 
 ## Reglas Importantes
